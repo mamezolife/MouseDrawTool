@@ -115,6 +115,38 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
+#include <commdlg.h>
+
+// [ファイルを開く]ダイアログ
+static VOID funcFileOpen(HWND hWnd)
+{
+    static OPENFILENAME     ofn;
+    static TCHAR            szPath[MAX_PATH] = { 0 };
+    static TCHAR            szFile[MAX_PATH] = { 0 };
+
+    if (szPath[0] == _T('\0')) {
+        GetCurrentDirectory(MAX_PATH, szPath);
+    }
+    if (ofn.lStructSize == 0) {
+        ofn.lStructSize = sizeof(OPENFILENAME);
+        ofn.hwndOwner = hWnd;
+        ofn.lpstrInitialDir = szPath;       // 初期フォルダ位置
+        ofn.lpstrFile = szFile;       // 選択ファイル格納
+        ofn.nMaxFile = MAX_PATH;
+        ofn.lpstrFilter = 
+            _T("BMPファイル(*.bmp)\0*.bmp\0")
+            _T("JPEGファイル(*.jpg,*.jpeg)\0*.jpg\0")
+            _T("PNGファイル(*.png)\0*.png\0")
+            _T("すべてのファイル(*.*)\0*.*\0");
+        ofn.lpstrTitle = _T("音楽ファイルを選択します。");
+        ofn.Flags = OFN_FILEMUSTEXIST;
+    }
+    if (GetOpenFileName(&ofn)) {
+        MessageBox(hWnd, szFile, _T("ファイルを開く"), MB_OK);
+        //TODO: ここにファイルを開いた後の処理を行う。大抵は取得ファイルパスの取得か。
+    }
+}
+
 //
 //  関数: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
@@ -188,6 +220,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 //DestroyWindow(hWnd);
                 PostMessage(hWnd, WM_CLOSE,0,0);  
                 break;
+            case IDM_FILE_OPEN:
+                //ファイルを開く
+                funcFileOpen(hWnd);
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
